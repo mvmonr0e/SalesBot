@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { createClient } from '@supabase/supabase-js'
 import ActiveCallDetail from "./components/ActiveCallDetail";
 import Button from "./components/base/Button";
 import Vapi from "@vapi-ai/web";
@@ -7,6 +8,8 @@ import { isPublicKeyMissingError } from "./utils";
 
 // Put your Vapi Public Key below.
 const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_KEY);
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 const App = () => {
   const [connecting, setConnecting] = useState(false);
@@ -62,7 +65,7 @@ const App = () => {
   const startCallInline = () => {
     setConnecting(true);
     console.log("connecting to assistant")
-    vapi.start("04785e99-56d8-4d47-b13c-501e7f5ecb9b");
+    vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID);
     console.log("connected to assistant")
   };
   

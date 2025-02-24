@@ -9,6 +9,7 @@
     "lint": "eslint --fix --ext .js,.jsx ."
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
     "@vapi-ai/web": "^2.2.2",
     "next": "15.1.7",
     "react": "^19.0.0",
