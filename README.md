@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# SalesBot - AI-Powered Sales Interview Simulator
 
-## Getting Started
+SalesBot is a full-stack web application that simulates a sales interview using Vapi's AI-powered voice assistant. The app allows users to engage in a mock interview, receive a transcript, and get feedback on their performance.
 
-First, run the development server:
+## Features
+- **Voice-Based Interview**: Simulates a real sales interview with an AI assistant.
+- **Live Speech Indicator**: Shows when the assistant is speaking.
+- **Call Scoring & Summary**: Generates a summary and scores based on clarity, relevance, and persuasiveness.
+- **Data Storage**: Stores call data in a Supabase database.
+- **Responsive UI**: Styled using Tailwind CSS.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## Setup Instructions
+
+### 1. Clone the Repository
+```sh
+git clone https://github.com/yourusername/salesbot.git
+cd salesbot
 ```
+### 2. Install Dependencies
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ensure you have Node.js installed (v18+ recommended). Then, install the dependencies:
+```sh
+npm install
+```
+### 3. Configure Environment Variables
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Create a .env.local file in the root directory and add the following:
+``` sh
+NEXT_PUBLIC_VAPI_KEY=your_vapi_public_key
+NEXT_PUBLIC_VAPI_ASSISTANT_ID=your_vapi_assistant_id
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+Replace the placeholder values with your actual API keys.
+### 4. Set Up Supabase
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a new table named **interviews** with the following columns:
 
-## Learn More
+- **call_id** (UUID, Primary Key)
 
-To learn more about Next.js, take a look at the following resources:
+- **transcript** (TEXT)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **summary** (TEXT)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **clarity** (INTEGER)
 
-## Deploy on Vercel
+- **relevance** (INTEGER)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **persuasiveness** (INTEGER)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Get your Supabase URL and API Key from the Project Settings and add them to .env.local.
+
+### 5. Run the Development Server
+``` sh
+npm run dev
+``` 
+The app will be available at http://localhost:3000.
+
+## Vapi Configuration Steps
+
+1. Sign up at Vapi and create a new assistant.
+
+2. Configure the assistant's responses for a sales interview.
+
+3. Get your Vapi Public Key and Assistant ID from the Vapi dashboard.
+
+4. Add them to your .env.local file.
+
+## How to Test the App
+
+1. Start the app with npm run dev.
+
+2. Click Start Interview to begin a simulated call.
+
+3. Speak with the AI assistant.
+
+4. End the call, and the transcript with scores should appear.
+
+5. Check the Supabase database for stored interview data.
+
+## Tech Stack
+
+    Frontend: Next.js, Tailwind CSS
+    Backend: Supabase
+    AI Integration: Vapi
+    Deployment: Vercel (recommended)
+
+## Future Improvements
+
+- Enhancing the AI model for better interview assessment.
+- Implementing user authentication.
+- Adding a dashboard for tracking multiple interviews.
