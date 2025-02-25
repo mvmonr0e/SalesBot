@@ -23,7 +23,7 @@ const App = () => {
 
   const fetchCallData = async (callId, attempt = 1) => {
     if (!callId) {
-      console.error("callId is undefined, cannot fetch data.");
+      console.warn("callId is undefined, cannot fetch data.");
       return;
     }
   
@@ -53,6 +53,7 @@ const App = () => {
   
     console.log("Fetched Call Data:", data);
     setCallData(data); // Store data in state
+    setFetchingTranscript(false);
   };
   
   // Hook into Vapi events
@@ -74,7 +75,7 @@ const App = () => {
       setTimeout(() => {
         fetchCallData(callId); // Start polling for data
       }, 3000); // Wait 3 seconds before fetching
-      setFetchingTranscript(false); 
+ 
       setCallId(null);
     });
     
@@ -114,17 +115,18 @@ const App = () => {
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-screen p-4">
-      {/* Start Interview Button (Only show when not fetching transcript) */}
-      {!connected && !fetchingTranscript && !callData && (
+      {/* Start Interview Button - Shows Loading When Connecting or Fetching Transcript */}
+      {!connected && (
         <Button
-          label="Start Interview"
+          label={fetchingTranscript ? "Fetching Transcript..." : "Start Interview"}
           onClick={startCall}
-          isLoading={connecting}
+          isLoading={connecting || fetchingTranscript}
+          disabled={connecting || fetchingTranscript}
           className="mb-4"
         />
       )}
   
-      {/* Active Call UI */}
+      {/* Active Call Details (Only Show When Connected) */}
       {connected && (
         <ActiveCallDetail
           assistantIsSpeaking={assistantIsSpeaking}
@@ -133,23 +135,16 @@ const App = () => {
         />
       )}
   
-      {/* Loading indicator while fetching transcript */}
-      {fetchingTranscript && (
-        <Button label="Fetching transcript..." isLoading={true} disabled />
-      )}
-  
-      {/* Display Call Summary & Scores After Call Ends */}
-      {!connected && !fetchingTranscript && callData && (
-        <div className="bg-black text-white w-3/4 h-48 p-4 rounded-lg border border-gray-600 overflow-auto whitespace-pre-wrap mt-4">
-          <p><strong>Transcript:</strong> {callData.transcript || "No transcript available"}</p>
-          <p><strong>Summary:</strong> {callData.summary?.replace(/^summary:\s*/i, "") || "No summary available"}</p>
-          <p><strong>Clarity:</strong> {callData.clarity !== undefined ? `${callData.clarity}/5` : "N/A"}</p>
-          <p><strong>Relevance:</strong> {callData.relevance !== undefined ? `${callData.relevance}/5` : "N/A"}</p>
-          <p><strong>Persuasiveness:</strong> {callData.persuasiveness !== undefined ? `${callData.persuasiveness}/5` : "N/A"}</p>
-        </div>
+      {/* Text Box for Call Data (Only Show After Transcript is Fetched) */}
+      {callData && !connected && !fetchingTranscript && (
+        <textarea
+          className="bg-black text-white w-4/5 h-80 p-4 rounded-lg border border-gray-600 resize-none mt-4"
+          value={`Summary: ${callData.summary.replace(/^summary:\s*/i, "")}\n\nClarity: ${callData.clarity}/5\nRelevance: ${callData.relevance}/5\nPersuasiveness: ${callData.persuasiveness}/5\n\nTranscript:\n${callData.transcript}`}
+          readOnly
+        />
       )}
     </div>
-  );
+  );  
 };  
 
 // Utility hooks
