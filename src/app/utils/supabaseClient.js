@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { createClient } from "@supabase/supabase-js";
 
 // Ensure environment variables are loaded
