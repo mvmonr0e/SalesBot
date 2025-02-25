@@ -92,3 +92,6 @@ The app will be available at http://localhost:3000.
 - Enhancing the AI model for better interview assessment.
 - Implementing user authentication.
 - Adding a dashboard for tracking multiple interviews.
+
+### TROUBLESHOOTING
+If the app fails to start after building it, then delete the .next file and try building it again.
