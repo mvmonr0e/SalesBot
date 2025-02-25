@@ -11,6 +11,7 @@ const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_KEY);
 
 
 const App = () => {
+  // state variables to manage UI and call status
   const [connecting, setConnecting] = useState(false);
   const [connected, setConnected] = useState(false);
   const [assistantIsSpeaking, setAssistantIsSpeaking] = useState(false);
@@ -19,8 +20,10 @@ const App = () => {
   const [callData, setCallData] = useState(null);
   const [fetchingTranscript, setFetchingTranscript] = useState(false);
   
+  //Custom hook to manage invalid public key status
   const { showPublicKeyInvalidMessage, setShowPublicKeyInvalidMessage } = usePublicKeyInvalid();
 
+  // fetch call data from supabase using the call ID
   const fetchCallData = async (callId, attempt = 1) => {
     if (!callId) {
       console.warn("callId is undefined, cannot fetch data.");
@@ -33,7 +36,7 @@ const App = () => {
       .from("interviews")
       .select("transcript, summary, clarity, relevance, persuasiveness")
       .eq("call_id", callId)
-      .maybeSingle(); // Ensures null instead of an error if no row is found
+      .maybeSingle(); 
   
     if (error) {
       console.error("Error fetching call data:", error);
@@ -43,7 +46,7 @@ const App = () => {
     if (!data) {
       console.warn(`No data found yet for call_id: ${callId}, retrying in 2 seconds...`);
   
-      if (attempt < 5) { // Retry up to 5 times
+      if (attempt < 5) { 
         setTimeout(() => fetchCallData(callId, attempt + 1), 2000);
       } else {
         console.error("Failed to fetch call data after multiple attempts.");
@@ -52,7 +55,7 @@ const App = () => {
     }
   
     console.log("Fetched Call Data:", data);
-    setCallData(data); // Store data in state
+    setCallData(data); 
     setFetchingTranscript(false);
   };
   
@@ -73,8 +76,8 @@ const App = () => {
       setFetchingTranscript(true);
 
       setTimeout(() => {
-        fetchCallData(callId); // Start polling for data
-      }, 3000); // Wait 3 seconds before fetching
+        fetchCallData(callId); 
+      }, 3000); 
  
       setCallId(null);
     });
@@ -93,7 +96,7 @@ const App = () => {
     });
   }, [callId]); // Depend on callId to ensure it's available
 
-  // Call start handler
+  // start vapi call
   const startCall = async () => {
     setConnecting(true);
   
@@ -109,6 +112,7 @@ const App = () => {
     }
   };
   
+  // end vapi call
   const endCall = () => {
     vapi.stop();
   };
