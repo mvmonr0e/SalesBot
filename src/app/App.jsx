@@ -1,78 +1,64 @@
 import { useEffect, useState } from "react";
-
-import { createClient } from '@supabase/supabase-js'
 import ActiveCallDetail from "./components/ActiveCallDetail";
 import Button from "./components/base/Button";
 import Vapi from "@vapi-ai/web";
 import { isPublicKeyMissingError } from "./utils";
 
-// Put your Vapi Public Key below.
+// Initialize Vapi
 const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_KEY);
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+var globalCallId = -1
 
 const App = () => {
   const [connecting, setConnecting] = useState(false);
   const [connected, setConnected] = useState(false);
-
   const [assistantIsSpeaking, setAssistantIsSpeaking] = useState(false);
   const [volumeLevel, setVolumeLevel] = useState(0);
-
+  const [callId, setCallId] = useState(null);
+  
   const { showPublicKeyInvalidMessage, setShowPublicKeyInvalidMessage } = usePublicKeyInvalid();
 
-  // hook into Vapi events
+  // Hook into Vapi events
   useEffect(() => {
     vapi.on("call-start", () => {
+      console.log("starting call");
       setConnecting(false);
       setConnected(true);
-
       setShowPublicKeyInvalidMessage(false);
     });
 
     vapi.on("call-end", () => {
+      console.log("ending call");
       setConnecting(false);
       setConnected(false);
-
       setShowPublicKeyInvalidMessage(false);
+      setCallId(null);
     });
 
-    vapi.on("speech-start", () => {
-      setAssistantIsSpeaking(true);
-    });
+    vapi.on("speech-start", () => setAssistantIsSpeaking(true));
+    vapi.on("speech-end", () => setAssistantIsSpeaking(false));
+    vapi.on("volume-level", (level) => setVolumeLevel(level));
 
-    vapi.on("speech-end", () => {
-      setAssistantIsSpeaking(false);
-    });
-
-    vapi.on("volume-level", (level) => {
-      setVolumeLevel(level);
-    });
-
-    vapi.on("error", (error) => {
+    vapi.on("error", () => {
       console.error(error);
-
       setConnecting(false);
       if (isPublicKeyMissingError({ vapiError: error })) {
         setShowPublicKeyInvalidMessage(true);
       }
     });
+  }, [callId]); // Depend on callId to ensure it's available
 
-    // we only want this to fire on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // call start handler
-  const startCallInline = () => {
+  // Call start handler
+  const startCall = () => {
     setConnecting(true);
-    console.log("connecting to assistant")
-    vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID);
-    console.log("connected to assistant")
+    const call = vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID);
+    // set call id
+    setCallId(call.id);
+    globalCallId = call.id;
   };
   
   const endCall = () => {
-    console.log("ending call")
     vapi.stop();
-    console.log("call ended")
   };
 
   return (
@@ -86,11 +72,7 @@ const App = () => {
       }}
     >
       {!connected ? (
-        <Button
-          label="Start Interview"
-          onClick={startCallInline}
-          isLoading={connecting}
-        />
+        <Button label="Start Interview" onClick={startCall} isLoading={connecting} />
       ) : (
         <ActiveCallDetail
           assistantIsSpeaking={assistantIsSpeaking}
@@ -98,49 +80,40 @@ const App = () => {
           onEndCallClick={endCall}
         />
       )}
-
       {showPublicKeyInvalidMessage ? <PleaseSetYourPublicKeyMessage /> : null}
     </div>
   );
 };
 
-
+// Utility hooks
 const usePublicKeyInvalid = () => {
   const [showPublicKeyInvalidMessage, setShowPublicKeyInvalidMessage] = useState(false);
 
-  // close public key invalid message after delay
   useEffect(() => {
     if (showPublicKeyInvalidMessage) {
-      setTimeout(() => {
-        setShowPublicKeyInvalidMessage(false);
-      }, 3000);
+      setTimeout(() => setShowPublicKeyInvalidMessage(false), 3000);
     }
   }, [showPublicKeyInvalidMessage]);
 
-  return {
-    showPublicKeyInvalidMessage,
-    setShowPublicKeyInvalidMessage,
-  };
+  return { showPublicKeyInvalidMessage, setShowPublicKeyInvalidMessage };
 };
 
-const PleaseSetYourPublicKeyMessage = () => {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        bottom: "25px",
-        left: "25px",
-        padding: "10px",
-        color: "#fff",
-        backgroundColor: "#f03e3e",
-        borderRadius: "5px",
-        boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-      }}
-    >
-      Is your Vapi Public Key missing? (recheck your code)
-    </div>
-  );
-};
-
+// Public Key Error Message Component
+const PleaseSetYourPublicKeyMessage = () => (
+  <div
+    style={{
+      position: "fixed",
+      bottom: "25px",
+      left: "25px",
+      padding: "10px",
+      color: "#fff",
+      backgroundColor: "#f03e3e",
+      borderRadius: "5px",
+      boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+    }}
+  >
+    Is your Vapi Public Key missing? (recheck your code)
+  </div>
+);
 
 export default App;
