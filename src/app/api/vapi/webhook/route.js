@@ -7,9 +7,7 @@ export async function POST(req) {
   
       if (!message || message.type !== "end-of-call-report") {
         return new Response(JSON.stringify({ error: "Invalid request" }), { status: 400 });
-      } else {
-        console.log(message);
-      }
+      } 
 
       // Extract relevant data
       const call_id = message.call?.id;
